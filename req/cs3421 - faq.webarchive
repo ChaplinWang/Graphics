@@ -1,0 +1,336 @@
+bplist00“_WebMainResource_WebSubresources’	
+_WebResourceFrameName^WebResourceURL_WebResourceData_WebResourceMIMEType_WebResourceTextEncodingNameP_Chttp://www.cse.unsw.edu.au/~cs3421/12s2/assignments/fpview/faq.htmlO0Ÿ<!DOCTYPE html PUBLIC "-//IETF//DTD HTML//EN"><html><head>
+<title>
+cs3421 - faq.html
+</title>
+<link rel="stylesheet" href="/~cs3421/12s2/style.css" type="text/css">
+</head>
+<body class="light">
+
+<center>
+<table width="100%" border="0" cellspacing="0" cellpadding="6">
+  <tbody><tr>
+    <th align="center" valign="top" colspan="2">
+    <font size="4" color="navy"><b>COMP3421/9415 Computer Graphics Assignment 2 FAQ</b></font>
+    </th>
+  </tr>
+  <tr>
+    <td align="left" valign="top">
+    <a target="_top" href="http://www.cse.unsw.edu.au/~cs3421">
+    <small>Computer Graphics 12s2</small>
+    </a>
+    </td>
+    <td style="border: none" align="right" valign="top">
+    <small>
+    <b>Last updated</b>
+    
+    Fri 27 Jul 2012 13:45
+    </small>
+    </td>
+  </tr>
+</tbody></table>
+</center>
+
+
+    <b>Note: Latest additions appear first.</b>
+
+    <h2>Can you give some hints about how to react to mouse drags?</h2>
+
+    Hmmm, I guess so. 
+    <p>
+      First hint: Movement can be acomplished easily
+      by adjusting the parameters to the gluLookat() function.
+    </p><p>
+      Second hint: Let's call the eye's position eye, and the point we 
+      are looking at look, and assume they are both 3D points (with
+      fields x, y and z). Then look-eye is a very important vector
+      ... called the <emph>view direction</emph>. The view direction
+      is almost the same concept as the view plane normal in our
+      lecture notes; but it is the direct negation (i.e. VPN is really 
+      eye-look). 
+    </p><p>
+      Third hint: Moving forwards and backwards adjust the position of
+      the eye by adding some scalar multiple of the view
+      direction. This is what the assignment spec means when it says:
+      If any mouse button is held down, then if the mouse is moved up,
+      the viewer's position should move forward in the direction he is
+      facing (note consequently that the point he is looking at
+      changes).
+    </p><p>
+      Fourth hint: Turning left and right rotates the view rotation
+      about the eye's position.  
+
+    </p><p>
+      Is that enough hints for you? Ok, I'll throw in a free warning
+      (and the set of steak knives are coming ;-). The view
+      direction's length needs to be carefully considered. If a scalar 
+      multiple of the view direction is added, this means that the
+      length of the view direction affects the speed of movement. This 
+      is not good. 
+
+
+
+    </p><h2>Can you give more hints on the "Java" side of handling
+      movement?</h2>
+
+    Alright, as we said before, movement forward and backward can be
+    done by multiplying a constant times the difference between the
+    eye and the look. Now we'll talk about the Java side. 
+    <p>
+      First of all, how do we determine the length of the drag? Well,
+      the conventional way is this: we remember the previous position
+      the mouse was at, then work out the difference for each of x and 
+      y. So typically, your mousePressed() looks like: 
+
+</p><pre>prevx = evt.getX();
+prevy = evt.getY();
+</pre>
+
+    where evt is the event that we received and prevx and prevy are
+    the previous x and y values. Then your mouseDragged looks like: 
+
+<pre>currentx = evt.getX();
+currenty = evt.getY(); 
+deltax = currentx-prevx; 
+deltay = currenty-prevy; 
+
+... Do the stuff to change the view. 
+
+prevx = currentx; 
+prevy = currenty; 
+</pre>
+    
+    Now, we know that deltay can be used to move forward and backward
+    ... but how much? Well, there are mathematical approaches
+    possible, but for the purposes of this assignment: well, the
+    longer the drag the more we want to move, and we put in a
+    constant, the adjustment of which affects the speed of the
+    drag. Then we take the product of the length of the drag, the
+    constant, and the vector to the look and add them to the current
+    eye position. 
+    <p>
+      Ok, what about rotation? Rotation is rotation of the point 
+      look about the point eye. How much? Again, the angle
+      depends on (a) the deltax and (b) the speed we want to turn
+      at, which is controlled by a constant. Yes, a more mathematical
+      approach can be taken, but for the purposes of this assignment,
+      a simple empirically determined constant will do. 
+    </p><p>
+      Set these constants for speed of forward/backward movement and
+      left/right movement so that it gives a reasonable response -- I
+      am not expecting a mathematical analysis. Make an educated
+      guess, and if it spins too fast, or moves too fast adjust it so
+      that it "feels" right. However, there is one important property: 
+      The rate of movement forward/back OR left/right should NOT
+      depend on the user's position in the scene, or what he's looking 
+      at. That rate should be maintained at a constant value. 
+
+    </p><h2>What do I have to do about error checking?</h2>
+
+    In other words, what should I do if someone presses "5" and
+    there's only 4 doors? if I press "5" and there is only four doors,
+    it should do nothing. It should not crash, though. The program
+    should contine to execute. Similarly with light sources. 
+    <p>
+      What if there are more than 9 doors? Then all doors should be
+      rendered, but only 9 of them (the first 9) can be opened or
+      closed. 
+    </p><p>
+      What if there are more than 4 light sources? Then it's a
+      violation of the spec. 
+
+    </p><h2>When do I have to normalise normals?</h2>
+    
+    Generally, normals should always have a length of 1. 
+
+
+    <h2>Should the light sources be declared before or after the
+      gluLookat() call? </h2>
+
+    The correct place for light sources to go is *after* the
+    gluLookat() call, as this means that they are transformed into the
+    camera's coordinate system like everything else (i.e. the
+    polygons). If they are placed before the gluLookat() call, then
+    this bypasses the gluLookat() transformation, which is equivalent
+    to placing them directly in the camera's coordinate system (since
+    they do not get transformed), and hence if you move around, the
+    light sources will move with you. This is not the desired
+    behaviour.
+
+    <h2>How do I decide which colour a light source is?</h2>
+    
+    If Lightsource inherits from FPEDShape (hint! hint!) then this can 
+    be retrieved from the field fill of the FPEDShape, which is of
+    type Color. This can then be
+    used as the diffuse intensity of the light source. You can then
+    use getRed() getGreen() and getBlue(), but there is already a
+    function for Color called getComponents() that can actually get an 
+    array of four elements, just like OpenGL expects it. 
+
+    <h2>How do I set the material properties of polygons without
+      texture?</h2>
+    
+    It's already done for you. Because we are using the mode
+    GL_COLOR_MATERIAL, whenever you set the drawing colour in OpenGL
+    using glColor3() then it will automatically set ka and kd as
+    appropriate. 
+
+
+    <h2>Which order should we attempt the assignment in?</h2>
+
+    Well, any order, but I would recommend:
+    <ul>
+      <li> Moving around.
+      </li><li> Different viewpoint support. 
+      </li><li> Constructing walls, windows and doors, but not worrying
+	about textures or opening etc.
+      </li><li> Enabling door opening/closing.
+      </li><li> Lights on and off.
+      </li><li> Fine detail: 
+	<ul>
+	  <li> Making sure textures are correctly applied.
+	  </li><li> Make sure normals are correctly calculated, etc.
+	  </li><li> Making sure lighting is working correctly.
+	</li></ul>
+    </li></ul>
+
+    <h2>Can you clarify the whole issue with texturing?</h2>
+
+    There are some subtle complexities with texturing. Note first that 
+    there was a change of specification. The change was:
+
+    <blockquote> 
+      Textures of walls and polygons should abut correctly if they are the same
+      scale AND the polygons are parallel AND one finishes where the other ends.
+    </blockquote>
+
+    It should now read: 
+
+    
+    <blockquote>
+      Textures of walls and polygons should abut correctly if they are
+      the same scale AND the polygons are parallel AND one finishes
+      where the other ends AND they are parallel with the x or z axis
+      AND they are drawn so that the start point of one wall is the
+      end of the other (and hence you do not have to adjust texture
+      direction so abutting works correctly if someone, for example,
+      drew it so that the end of one meets the end of another).
+    </blockquote>
+    
+    This makes it strictly easier to do. If it met the original spec,
+    it should also meet the second. This should sort of happen
+    naturally if you take into account the start point of the
+    texture. 
+    <p>
+      What about the statement: <b>A wall's kd value should be defined by its texture.</b>
+      </p><p>
+      Well, obviously, this only applies if it is a textured wall. But 
+      you do not have to do anything special for this. If you set the
+      colour of a polygon to white and then use GL_MODULATE as the
+      mode of texturing, then this will automatically be done. 
+      </p><p>
+      
+    </p><h2>Do I have to specify normals for polygons?</h2>
+
+    Yes, if you want lighting to work properly! Note that for this
+    assignment, it is safe to assume that the normals at all the
+    vertices are the same. 
+    
+    <h2>Can you explain two-sided lighting?</h2>
+    <p>
+      Ok, but first you have to understand how lighting works in
+      OpenGL. Normally, only one side of a polygon is lit. But when
+      you select two-sided lighting, it applies the lighting equations
+      to both sides of the polygon. But how does it work out the
+      normal to the opposite side of the polygon?  It reverses the
+      normal direction that is stored for the polygon. For this
+      reason, it is very important to get lighting to work correctly
+      that the conventions match. In particular, you MUST make sure
+      that the counterclockwise convention and the normal you
+      calculate match.
+
+
+
+    </p><h2>How do I get JOGL to refresh the screen?</h2>
+    
+    Try glc.repaint(). This asks for the screen to be refreshed. You
+    should call this whenever you change things in the scene. To be
+    more accurate, glc.repaint() forces the buffers to be swapped in
+    double buffering. 
+
+
+
+    <h2>Can you give some hints about how to react to mouse drags?</h2>
+
+    Hmmm, I guess so. 
+    <p>
+      First hint: Movement can be acomplished easily
+      by adjusting the parameters to the gluLookat() function.
+    </p><p>
+      Second hint: Let's call the eye's position eye, and the point we 
+      are looking at look, and assume they are both 3D points (with
+      fields x, y and z). Then look-eye is a very important vector
+      ... called the <emph>view direction</emph>. The view direction
+      is almost the same concept as the view plane normal in our
+      lecture notes; but it is the direct negation (i.e. VPN is really 
+      eye-look). 
+    </p><p>
+      Third hint: Moving forwards and backwards adjust the position of
+      the eye by adding some scalar multiple of the view
+      direction. This is what the assignment spec means when it says:
+      If any mouse button is held down, then if the mouse is moved up,
+      the viewer's position should move forward in the direction he is
+      facing (note consequently that the point he is looking at
+      changes).
+    </p><p>
+      Fourth hint: Turning left and right rotates the view rotation
+      about the eye's position.  
+
+    </p><p>
+      Is that enough hints for you? Ok, I'll throw in a free warning
+      (and the set of steak knives are coming ;-). The view
+      direction's length needs to be carefully considered. If a scalar 
+      multiple of the view direction is added, this means that the
+      length of the view direction affects the speed of movement. This 
+      is not good. 
+
+    </p><h2>How can I work out the class of objects?</h2>
+
+    Well, there's a Java operator called instanceof. A typical use
+    might be something like:
+
+<pre>if(e instanceof Point){
+  System.out.println("e is an instance of class Point"); 
+}
+</pre>
+    
+    You may find this useful somewhere in the assignment. Who knows
+    where?  
+
+<p align="right"><small><a target="_top" href="http://www.cse.unsw.edu.au/~cs3421/">cs3421</a> @ <a target="_top" href="http://www.cse.unsw.edu.au/">CSE</a> @ <a target="_top" href="http://www.unsw.edu.au/">UNSW</a></small></p>
+
+  
+
+</body></html>Ytext/htmlUUTF-8°‘_WebResourceResponse_1http://www.cse.unsw.edu.au/~cs3421/12s2/style.cssOIbplist00‘fgX$versionX$objectsY$archiverT$top Ü†Ø"()012JKLMNOPQRSTUVWXYZ[\`aU$null›	
+ !R$6S$10R$2R$7R$3S$11R$8V$classR$4R$9R$0R$5R$1ÄÄÄ ÄÄÄÄ Ä”#$%&[NS.relativeWNS.baseÄÄÄ _1http://www.cse.unsw.edu.au/~cs3421/12s2/style.css“*+,-Z$classnameX$classesUNSURL¢./UNSURLXNSObject#A∂Ét›+»”3456@WNS.keysZNS.objectsÄ©789:;<=>?Ä	Ä
+ÄÄÄÄÄÄÄ©ABCDEFGHIÄÄÄÄÄÄÄÄÄVServer\Content-TypeTEtag]Last-ModifiedTDate]Accept-Ranges^Content-LengthZKeep-AliveZConnection_(Apache/1.3.34 (Debian) PHP/4.4.4-8+etch6Xtext/css_"55642c4-37d-50120e9d"_Fri, 27 Jul 2012 03:44:29 GMT_Tue, 25 Sep 2012 06:15:14 GMTUbytesS893_timeout=15, max=100ZKeep-Alive“*+]^_NSMutableDictionary£]_/\NSDictionary}“*+bc_NSHTTPURLResponse£de/_NSHTTPURLResponse]NSURLResponse_NSKeyedArchiver—hi_WebResourceResponseÄ    # - 2 7 X ^ y | Ä É Ü â ç ê ó ö ù † £ ¶ ® ™ ¨ Æ ∞ ≤ ¥ ∂ ∏ ∫ º æ ≈ — Ÿ € › ﬂ#,25;DMOV^ikuwy{}ÅÉÖáëìïóôõùü°£™∑º œ›Ï˜-6OoèïôØ∫ø’ŸÊÈÓ(:=S             j              UO}body {  font-family: "Verdana", "Helvetica", "Arial", "lucida calligraphy", sans-serif;
+        background: #FFFFFF; }
+body.light { font-family: "Verdana", "Helvetica", "Arial", "lucida calligraphy", sans-serif;
+        background: #F8F8F8; }
+body.dark { font-family: "Verdana", "Helvetica", "Arial", "lucida calligraphy", sans-serif;
+        background: #C4D6E6; }
+select {  font-family: "Verdana", "Helvetica", "Arial", "lucida calligraphy", sans-serif;
+        background: #FFFFFF; }
+input {  font-family: "Verdana", "Helvetica", "Arial", "lucida calligraphy", sans-serif;
+        background: #FFFFFF; }
+th { background: #C4D6E6; color: black }
+a:link      { color: #006699; }
+a:visited   { color: #006699; }
+a:active    { color: #990000; }
+
+P.newpage { page-break-before: always }
+P.indent { margin-left: 1cm; margin-right: 1cm }
+td.padded { padding: 10px }
+LI.wide { line-height: 130% }
+
+Xtext/css    1 < S b t ä ® © Ô1Ã1÷1‹1ﬁ1Á1˝216~9ˇ                           :
